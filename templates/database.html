@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ database_name }}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container d-flex align-items-center min-vh-100">
+        <div class="row justify-content-center w-100">
+            <div class="col-lg-7">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <img src="/static/img/databases/postgresql.svg" alt="PostgreSQL" style="width: 30%; height: auto; display: block; margin: auto;">
+                        <form>
+                            {% for key, value in form_elements.items() %}
+                                <div class="form-group">
+                                    <label for="{{ key }}">{{ value.label }}</label>
+                                    {% if value.type == 'string' %}
+                                        <input type="text" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
+                                    {% elif value.type == 'password' %}
+                                        <input type="password" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
+                                    {% elif value.type == 'number' %}
+                                        <input type="number" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-block" style="background-color: #00A587; color: white; width: 20%; margin: 0 auto;">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
