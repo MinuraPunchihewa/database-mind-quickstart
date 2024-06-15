@@ -11,7 +11,7 @@
             <div class="col-lg-7">
                 <div class="card mt-5">
                     <div class="card-body">
-                        <img src="/static/img/databases/postgresql.svg" alt="PostgreSQL" style="width: 30%; height: auto; display: block; margin: auto;">
+                        <img src="{{ '/static/img/databases/' + database_name + '.svg' }}" alt="{{ database_name }}" style="width: 30%; height: auto; display: block; margin: auto;">
                         <form action="{{ url_for('create_mind') }}" method="POST">
                             <!-- Hidden input field for database_name -->
                             <input type="hidden" name="database_name" value="{{ database_name }}">
