@@ -1,11 +1,13 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for
-from mindsdb_sdk.utils.mind import create_mind
+from flask import Flask, render_template, request, redirect, session, url_for
+from mindsdb_sdk.utils.mind import create_mind as create_mindsdb_mind
 from openai import OpenAI
 import json
 import logging
 import time
+
+from config import databases
 
 # Configure logging to ignore Werkzeug's default logging messages
 log = logging.getLogger('werkzeug')
@@ -43,6 +45,7 @@ if not database_user or not database_password or not database_host or not databa
 
 # Create a Flask application instance
 app = Flask(__name__, static_folder='static', template_folder='templates')
+app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
 
 # Create an instance of the OpenAI client with the MindsDB API Key and endpoint
 client = OpenAI(
@@ -65,16 +68,16 @@ description = 'House Sales'
 mind_name = 'my_house_data_mind_'+ts
 print("Creating mind, please wait...")
 # Create a mind
-mind = create_mind(
-    name = mind_name,
-    base_url=base_url,
-    api_key=mindsdb_api_key,
-    model=model,
-    data_source_connection_args=connection_args,
-    data_source_type=data_source,
-    description=description
-)
-print(f"Mind successfully created: {mind_name}")
+# mind = create_mindsdb_mind(
+#     name = mind_name,
+#     base_url=base_url,
+#     api_key=mindsdb_api_key,
+#     model=model,
+#     data_source_connection_args=connection_args,
+#     data_source_type=data_source,
+#     description=description
+# )
+# print(f"Mind successfully created: {mind_name}")
 
 # Define the route for the home page
 @app.route('/')
@@ -85,6 +88,63 @@ def index():
 @app.route('/llm')
 def llm():
     return render_template('llm.html')  # Render the index.html template
+
+@app.route('/database')
+def get_databases():
+    return render_template('databases.html')
+
+@app.route('/database/<string:database_name>')
+def get_database(database_name):
+    form_elements = databases[database_name]
+    return render_template('database.html', database_name=database_name, form_elements=form_elements)
+
+@app.route('/mind', methods=['POST'])
+def create_mind():
+    # Get database name
+    database_name = request.form['database_name']
+
+    # Get expected database connection arguments
+    database_args = databases[database_name]
+
+    # Create connection arguments dictionary
+    connection_args = {}
+    for key, val in database_args.items():
+        if val['type'] == 'number':
+            connection_args[key] = int(request.form[key])
+        else:
+            connection_args[key] = request.form[key]
+
+    # TODO: Add schema field to the form
+    connection_args['schema'] = database_schema
+
+    print(f"Connection args: {connection_args}")
+
+    # Get data description
+    # TODO: Add a description field to the form
+    # description = request.form['description']
+    description = 'House Sales'
+
+    # Generate a unique mind name
+    ts = str(int(time.time()))
+    mind_name = f"{database_name}_mind_{ts}"
+
+    # Create a mind
+    create_mindsdb_mind(
+        name = mind_name,
+        base_url=base_url,
+        api_key=mindsdb_api_key,
+        model=model,
+        data_source_connection_args=connection_args,
+        data_source_type='postgres',
+        description=description
+    )
+
+    print(f"Mind successfully created: {mind_name}")
+
+    # Store the mind name in the session
+    session['mind_name'] = mind_name
+
+    return render_template('index.html')
 
 # Define the route for sending a message
 @app.route('/send', methods=['POST'])
@@ -97,7 +157,7 @@ def send():
         # Send the message to the API and get the response
         response = client.chat.completions.create(
             # The model provided must be the name of the mind.
-            model=mind_name,
+            model=session['mind_name'],
             messages=[new_message],
             stream=False
         )
@@ -201,5 +261,5 @@ def models():
 # Run the Flask application
 if __name__ == '__main__':
     print("App Running on 127.0.0.1:8000")
-    app.run(port=8000, debug=False)
+    app.run(port=8000, debug=True) 
 
