@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 
 databases = {
-    "postgresql": OrderedDict(
+    "postgres": OrderedDict(
         user={
             'type': 'string',
             'description': 'The user name used to authenticate with the PostgreSQL server.',
