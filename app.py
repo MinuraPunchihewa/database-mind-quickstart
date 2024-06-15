@@ -1,18 +1,17 @@
 import os
-from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, session, url_for
-from mindsdb_sdk.utils.mind import create_mind as create_mindsdb_mind
-from openai import OpenAI
 import json
-import logging
 import time
+import logging
+from openai import OpenAI
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, session
+from mindsdb_sdk.utils.mind import create_mind as create_mindsdb_mind
 
 from config import databases
 
 # Configure logging to ignore Werkzeug's default logging messages
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
-ts = str(int(time.time()))
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -25,22 +24,9 @@ base_url = os.getenv('MINDSDB_API_URL', "https://llm.mdb.ai")
 if base_url.endswith("/"):
     base_url = base_url[:-1]
 
-#Get database connections details from environment variables
-database_user = os.getenv('DATABASE_USER')
-database_password = os.getenv('DATABASE_PASSWORD')
-database_host = os.getenv('DATABASE_HOST')
-database_port = os.getenv('DATABASE_PORT')
-database_database = os.getenv('DATABASE_DATABASE')
-database_schema = os.getenv('DATABASE_SCHEMA')
-
-
 # If the MindsDB API Key is not found, print an error message and exit
 if not mindsdb_api_key:
     print("Please create a .env file and add your MindsDB API Key")
-    exit()
-
-if not database_user or not database_password or not database_host or not database_port or not database_database or not database_schema:
-    print("Please create a .env file and add your Database connection details")
     exit()
 
 # Create a Flask application instance
@@ -55,29 +41,6 @@ client = OpenAI(
 
 # Mind arguments
 model = 'gpt-4'  # This is the model used by MindsDB text to SQL, and is not limited by what our inference endpoints support.
-connection_args = {
-    'user': database_user,
-    'password': database_password,
-    'host': database_host,
-    'port': database_port,
-    'database': database_database,
-    'schema': database_schema
-}
-data_source = 'postgres'
-description = 'House Sales'
-mind_name = 'my_house_data_mind_'+ts
-print("Creating mind, please wait...")
-# Create a mind
-# mind = create_mindsdb_mind(
-#     name = mind_name,
-#     base_url=base_url,
-#     api_key=mindsdb_api_key,
-#     model=model,
-#     data_source_connection_args=connection_args,
-#     data_source_type=data_source,
-#     description=description
-# )
-# print(f"Mind successfully created: {mind_name}")
 
 # Define the route for the home page
 @app.route('/')
@@ -115,9 +78,7 @@ def create_mind():
             connection_args[key] = request.form[key]
 
     # TODO: Add schema field to the form
-    connection_args['schema'] = database_schema
-
-    print(f"Connection args: {connection_args}")
+    connection_args['schema'] = 'demo_data'
 
     # Get data description
     # TODO: Add a description field to the form
@@ -139,7 +100,7 @@ def create_mind():
         description=description
     )
 
-    print(f"Mind successfully created: {mind_name}")
+    logging.info(f"Mind successfully created: {mind_name}")
 
     # Store the mind name in the session
     session['mind_name'] = mind_name
