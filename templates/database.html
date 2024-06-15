@@ -34,5 +34,15 @@
             </div>
         </div>
     </div>
+    <div id="loader" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Connecting...</span>
+        </div>
+    </div>
+    <script>
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('loader').style.display = 'block';
+        });
+    </script>
 </body>
 </html>
