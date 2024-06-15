@@ -19,11 +19,11 @@
                                 <div class="form-group">
                                     <label for="{{ key }}">{{ value.label }}</label>
                                     {% if value.type == 'string' %}
-                                        <input type="text" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
+                                        <input name="{{ key }}" type="text" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
                                     {% elif value.type == 'password' %}
-                                        <input type="password" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
+                                        <input name="{{ key }}" type="password" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
                                     {% elif value.type == 'number' %}
-                                        <input type="number" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
+                                        <input name="{{ key }}" type="number" class="form-control" id="{{ key }}" placeholder="{{ value.description }}">
                                     {% endif %}
                                 </div>
                             {% endfor %}
