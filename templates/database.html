@@ -12,7 +12,9 @@
                 <div class="card mt-5">
                     <div class="card-body">
                         <img src="/static/img/databases/postgresql.svg" alt="PostgreSQL" style="width: 30%; height: auto; display: block; margin: auto;">
-                        <form>
+                        <form action="{{ url_for('create_mind') }}" method="POST">
+                            <!-- Hidden input field for database_name -->
+                            <input type="hidden" name="database_name" value="{{ database_name }}">
                             {% for key, value in form_elements.items() %}
                                 <div class="form-group">
                                     <label for="{{ key }}">{{ value.label }}</label>
